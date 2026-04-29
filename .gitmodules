@@ -1,4 +1,0 @@
-[submodule "lwip"]
-	path = DMX_ArtNet/lwip
-	url = https://git.savannah.gnu.org/git/lwip.git
-	branch = STABLE-2_1_x

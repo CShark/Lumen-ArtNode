@@ -3,23 +3,23 @@
 This project is a USB ArtNET interface with four ports, based on the STM32G484. It will register itself as an Ethernet Card using the CDC-NCM protocoll to be automatically recognized by most operating systems (except Windows 10, which needs some manual configuration). It will then bind the ArtNET-implementation to a configurable IP on that virtual ethernet card. The device can be configured either using ArtNET commands for software that supports this, using a web interface on the device and it can optionally be extended to include a display module for configuration directly at the device.
 
 <p float="middle">
-    <img src="/Images/device.png" width="400">
-    <img src="/Images/device_back.png" width="400">
+    <img src="/assets/device.png" width="400">
+    <img src="/assets/device_back.png" width="400">
 </p>
 <p float="middle">
-    <img src="/Images/dev_0.JPG" width="400">
-    <img src="/Images/dev_1.JPG" width="400">
+    <img src="/assets/dev_0.JPG" width="400">
+    <img src="/assets/dev_1.JPG" width="400">
 </p>
 
 ## Schematic
 The project uses an STM32G484RE, but should work with any STM32G4xxRE variant. The ports are controlled by a MAX3440E each, which will provide some ESD protection in addition to the TVS-Diodes. The device will draw around ~150mA, which is easily delivered by USB2.0 ports. Galvanic isolation was omitted because it needs too much space and because it is not recommended for the transmitting ports of DMX-Devices anyway (although it is recommended for receiving ports, but not mandatory).
 
-![](/Images/mainboard.png)
+![](/assets/mainboard.png)
 
 ## PCB
 The PCB is designed as a four layer board, as with this small size the price was acceptable. The pcb was designed with a `TEKAL 31.29`-case from TEKO in mind, but any case with at least 100x100mm will work.  placing three ports at the rear and one port beside the usb port at the front of the case. The display module is completely optional and is designed to slot into the mainboard and is secured with an additional screw from the front. It is then connected using a 10-pin ribbon cable.
 
-![](/Images/exploded.png)
+![](/assets/exploded.png)
 
 ### BOM
 The total cost for this device is currently aproximately 90€. Assembly takes around 6 hours, including soldering the boards, CNC the covers and soldering / crimping the connectors. You can save money by printing your own case (25€), finding a cheaper STM32G4xxRE variant at your local dealer (11€), finding cheaper XLR connectors (5€) and skipping on the display module (5€). 
@@ -93,4 +93,4 @@ The firmware is completely custom, only based on CMSIS (no HAL) and supports the
 
 
 The device supports mDNS and is always reachable using `artnet.local` in addition to its ip-address. The WebUI allows configuring each individual port with all the settings that ArtNET-Commands also support. You can also change the ip-configuration of the device and its internal minimal DHCP-Server, as well as clearing all settings, rebooting the device and switching the device into DFU/Bootloader mode to flash a new firmware.
-![](/Images/webconfig1.png)
+![](/assets/webconfig1.png)
