@@ -1,0 +1,4 @@
+[submodule "firmware"]
+	path = firmware
+	url = git@github.com:CShark/Lumen-ArtNode-Firmware.git
+	branch = master
