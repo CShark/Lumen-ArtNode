@@ -154,7 +154,7 @@ typedef struct {
 // ===================================================
 
 #define USB_SelfPowered 0
-#define USB_NumInterfaces 2
+#define USB_NumInterfaces 4
 #define USB_NumEndpoints 3 // Config + 1 Bidirectional
 #define USB_MaxControlData 64
 

@@ -76,7 +76,7 @@ static const USB_DESC_FUNC_NCM NCMFuncNCM = {
     .Type = CS_INTERFACE,
     .SubType = FUNC_NCM,
     .NcmVersion = 0x0100,
-    .NetworkCapabilities = 0b10000};
+    .NetworkCapabilities = 0};
 
 static const USB_DESCRIPTOR_INTERFACE DataInterfaces[2] = {
     {
@@ -112,7 +112,7 @@ static const USB_DESCRIPTOR_ENDPOINT NCM_Endpoints[3] = {
      .Address = 2,
      .Attributes = 0x02,
      .MaxPacketSize = 64,
-     .Interval = 1},
+     .Interval = 0},
     {.Length = 7,
      .Type = 0x05,
      .Address = (1 << 7) | 2,
@@ -312,10 +312,12 @@ void USB_ConfigureEndpoints() {
 char USB_HandleClassSetup(USB_SETUP_PACKET *setup, char *data, short length) {
     // Route the setup packets based on the Interface / Class Index
     if (setup->Index == 0) {
-        NCM_SetupPacket(setup, data, length);
+        return NCM_SetupPacket(setup, data, length);
     } else if (setup->Index == 2) {
-        CDC_SetupPacket(setup, data, length);
+        return CDC_SetupPacket(setup, data, length);
     }
+
+    return USB_ERR;
 }
 
 void USB_ResetClass(char interface, char alternateId) {

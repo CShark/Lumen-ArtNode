@@ -7,7 +7,7 @@
 #include "arch/cc.h"
 
 #define ARTNET_FAILTIMEOUT 5000
-#define ARTNET_FIRMWAREV   3
+#define ARTNET_FIRMWAREV   4
 
 typedef enum {
     ArtCode_OpPoll = 0x2000,

@@ -9,5 +9,6 @@
         "flash_ee.h": "c",
         "cdc_device.h": "c"
     },
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "cmake.sourceDirectory": "F:/Hardware/Lumen-ArtNode-Legacy/DMX G441/lwip"
 }

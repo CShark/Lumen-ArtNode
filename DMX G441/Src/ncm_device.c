@@ -34,38 +34,42 @@ static USB_NTB_INPUT_SIZE ntbInputSize = {
     .NtbInMaxSize = 2048,
 };
 
+static unsigned short ntbFormat = 0;
+
 static const USB_NTB_PARAMS ntb_params = {
     .Length = 0x1C,
     .NtbFormatsSupported = 0b01,
     .NtbInMaxSize = 2048,
-    .NdpInDivisor = 1,
+    .NdpInDivisor = 4,
     .NdpInPayloadRemainder = 0,
     .NdpInAlignment = 4,
 
     .NtbOutMaxSize = 2048,
-    .NdpOutDivisior = 1,
+    .NdpOutDivisior = 4,
     .NdpOutPayloadRemainder = 0,
     .NdpOutAlignment = 4,
 
     .NtbOutMaxDatagrams = 10};
+
+static unsigned short NCM_AlignTxDatagramOffset(unsigned short offset) {
+    unsigned short divisor = ntb_params.NdpOutDivisior;
+    unsigned short remainder = ntb_params.NdpOutPayloadRemainder;
+    return offset + (remainder + divisor - (offset % divisor)) % divisor;
+}
 
 static void NCM_TransmitNextBuffer();
 
 char NCM_SetupPacket(USB_SETUP_PACKET *setup, char *data, short length) {
     switch (setup->Request) {
     case NCM_GET_NTB_INPUT_SIZE: {
-        if (length == 4) {
-            USB_Transmit(0, &ntbInputSize, 4);
-        } else if (length == 8) {
-            USB_Transmit(0, &ntbInputSize, 8);
-        } else {
+        if (setup->Length != 4 && setup->Length != 8) {
             return USB_ERR;
         }
+        USB_Transmit(0, (char *)&ntbInputSize, setup->Length);
         return USB_OK;
-        break;
     }
     case NCM_SET_NTB_INPUT_SIZE: {
-        USB_NTB_INPUT_SIZE *info = data;
+        USB_NTB_INPUT_SIZE *info = (USB_NTB_INPUT_SIZE *)data;
 
         if (length >= 4) {
             ntbInputSize.NtbInMaxSize = info->NtbInMaxSize;
@@ -75,13 +79,25 @@ char NCM_SetupPacket(USB_SETUP_PACKET *setup, char *data, short length) {
             ntbInputSize.NtbInMaxDatagrams = info->NtbInMaxDatagrams;
         }
         return USB_OK;
-        break;
     }
     case NCM_GET_NTB_PARAMETERS: {
-        USB_Transmit(0, &ntb_params, sizeof(USB_NTB_PARAMS));
+        USB_Transmit(0, (char *)&ntb_params, MIN(sizeof(USB_NTB_PARAMS), setup->Length));
         return USB_OK;
-        break;
     }
+    case NCM_GET_NTB_FORMAT:
+        USB_Transmit(0, (char *)&ntbFormat, MIN(sizeof(ntbFormat), setup->Length));
+        return USB_OK;
+    case NCM_SET_NTB_FORMAT:
+        if (setup->Length != 0 || setup->Value != 0) {
+            return USB_ERR;
+        }
+        ntbFormat = setup->Value;
+        return USB_OK;
+    case NCM_SET_ETHERNET_PACKET_FILTER:
+        if (setup->Length != 0) {
+            return USB_ERR;
+        }
+        return USB_OK;
     }
 
     return USB_ERR;
@@ -212,9 +228,12 @@ char *NCM_GetNextTxDatagramBuffer(short length) {
         activeTxBuffer.offset = sizeof(NCM_NTB_HEADER_16);
     }
 
+    activeTxBuffer.offset = NCM_AlignTxDatagramOffset(activeTxBuffer.offset);
+
     if (activeTxBuffer.offset + length + sizeof(NCM_NTB_POINTER_16) + (activeTxBuffer.datagramCount + 2) * sizeof(NCM_NTB_DATAPOINTER_16) > maxLength ||
         activeTxBuffer.datagramCount + 1 > maxDatagrams) {
         NCM_FlushTx();
+        activeTxBuffer.offset = NCM_AlignTxDatagramOffset(activeTxBuffer.offset);
     }
 
     // Record Datagram
