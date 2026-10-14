@@ -318,15 +318,15 @@ static void USB_HandleSetup(USB_SETUP_PACKET *setup) {
         // Class and interface setup packets are redirected to the class specific implementation
         char ret = USB_HandleClassSetup(setup, ControlState.Receive.Buffer, ControlState.Receive.Length);
 
-        if ((setup->RequestType & 0x80) == 0) {
-            if (ret == USB_OK) {
+        if (ret == USB_OK) {
+            if ((setup->RequestType & 0x80) == 0) {
                 BTable[0].COUNT_TX = 0;
                 USB_SetEP(&USB->EP0R, USB_EP_TX_VALID, USB_EP_TX_VALID);
-            } else if (ret == USB_BUSY) {
-                USB_SetEP(&USB->EP0R, USB_EP_TX_NAK, USB_EP_TX_VALID);
-            } else {
-                USB_SetEP(&USB->EP0R, USB_EP_TX_STALL, USB_EP_TX_VALID);
             }
+        } else if (ret == USB_BUSY) {
+            USB_SetEP(&USB->EP0R, USB_EP_TX_NAK, USB_EP_TX_VALID);
+        } else {
+            USB_SetEP(&USB->EP0R, USB_EP_TX_STALL, USB_EP_TX_VALID);
         }
     } else if ((setup->RequestType & 0x60) == 0) {
         if ((setup->RequestType & 0x0F) == 0) { // Device Requests

@@ -53,6 +53,17 @@ typedef struct {
 } USB_DESCRIPTOR_CONFIG;
 
 typedef struct {
+    unsigned char Length;           // Größe des Descriptors (8 Bytes)
+    unsigned char Type;             // Descriptor-Typ (0x0B für IAD / ASSOCIATION)
+    unsigned char FirstInterface;   // Nummer des ersten Interfaces (z. B. 0)
+    unsigned char InterfaceCount;   // Anzahl der zusammengehörigen Interfaces (z. B. 2)
+    unsigned char Class;    		// Funktionsklasse (0x02 für CDC)
+    unsigned char SubClass; 		// Funktions-Subklasse (0x0D für NCM)
+    unsigned char Protocol;			// Funktions-Protokoll (0x00)
+    unsigned char strFunction;      // String-Index für die Beschreibung (0x00 falls nicht genutzt)
+} USB_DESCRIPTOR_IAD;
+
+typedef struct {
     unsigned char Length;
     unsigned char Type;
     unsigned char InterfaceID;

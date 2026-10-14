@@ -4,6 +4,7 @@
 #pragma pack(1)
 typedef struct {
     USB_DESCRIPTOR_CONFIG config;
+    USB_DESCRIPTOR_IAD iad;
     USB_DESCRIPTOR_INTERFACE ncm_if;
     USB_DESC_FUNC_HEADER func_header;
     USB_DESC_FUNC_UNION1 func_union;
@@ -21,9 +22,9 @@ static const USB_DESCRIPTOR_DEVICE DeviceDescriptor = {
     .Length = sizeof(USB_DESCRIPTOR_DEVICE),
     .Type = 0x01,
     .USBVersion = 0x0200,
-    .DeviceClass = 0x02,
-    .DeviceSubClass = 0x0D,
-    .DeviceProtocol = 0x00,
+    .DeviceClass = 0xEF,
+    .DeviceSubClass = 0x02,
+    .DeviceProtocol = 0x01,
     .MaxPacketSize = 64,
     .VendorID = 0x16C0,
     .ProductID = 0x088B,
@@ -34,7 +35,7 @@ static const USB_DESCRIPTOR_DEVICE DeviceDescriptor = {
     .Configurations = 1};
 
 static const ARTNET_CONFIG_DESCRIPTOR ConfigDescriptor = {
-    .config = {
+	.config = {
         .Length = sizeof(USB_DESCRIPTOR_CONFIG),
         .Type = 0x02,
         .TotalLength = sizeof(ARTNET_CONFIG_DESCRIPTOR),
@@ -44,6 +45,16 @@ static const ARTNET_CONFIG_DESCRIPTOR ConfigDescriptor = {
         .Attributes = (1 << 7),
         .MaxPower = 100,
     },
+	.iad = {
+		.Length = sizeof(USB_DESCRIPTOR_IAD),
+		.Type = 0x0B,
+		.FirstInterface = 0,
+		.InterfaceCount = 2,
+		.Class = 0x02,
+		.SubClass = 0x0D,
+		.Protocol = 0x00,
+		.strFunction = 0x00
+	},
     .ncm_if = {
         .Length = sizeof(USB_DESCRIPTOR_INTERFACE),
         .Type = 0x04,
@@ -72,15 +83,18 @@ static const ARTNET_CONFIG_DESCRIPTOR ConfigDescriptor = {
         .Length = sizeof(USB_DESC_FUNC_ECM),
         .Type = CS_INTERFACE,
         .SubType = FUNC_ECM,
-        .MaxSegmentSize = 1514,
         .strMacAddress = 20,
+        .EthernetStatistics = 0,
+        .MaxSegmentSize = 1514,
+        .NumberMcFilters = 0,
+        .NumberPowerFilters = 0,
     },
     .func_ncm = {
         .Length = sizeof(USB_DESC_FUNC_NCM),
         .Type = CS_INTERFACE,
         .SubType = FUNC_NCM,
         .NcmVersion = 0x0100,
-        .NetworkCapabilities = 0b10000,
+        .NetworkCapabilities = 0,
     },
     .ncm_ep = {
         .Length = sizeof(USB_DESCRIPTOR_ENDPOINT),
@@ -118,7 +132,7 @@ static const ARTNET_CONFIG_DESCRIPTOR ConfigDescriptor = {
         .Address = 2,
         .Attributes = 0x02,
         .MaxPacketSize = 64,
-        .Interval = 1,
+        .Interval = 0,
     },
     .data_ep1 = {
         .Length = sizeof(USB_DESCRIPTOR_ENDPOINT),
@@ -190,10 +204,10 @@ void USB_ConfigureEndpoints() {
 char USB_HandleClassSetup(USB_SETUP_PACKET *setup, const unsigned char *data, short length) {
     // Route the setup packets based on the Interface / Class Index
     if (setup->Index == 0) {
-        NCM_SetupPacket(setup, data, length);
+        return NCM_SetupPacket(setup, data, length);
     }
 
-    return USB_OK;
+    return USB_ERR;
 }
 
 void USB_ResetClass(char interface, char alternateId) {
